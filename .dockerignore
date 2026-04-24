@@ -1,0 +1,29 @@
+# Git
+.git
+.gitignore
+
+# Dev tooling
+.next
+node_modules
+npm-debug.log*
+
+# Secrets — never bake into the image
+.env.local
+.env.development.local
+.env.test.local
+service-account.json
+
+# Test / coverage
+coverage
+tests/e2e
+playwright-report
+playwright/.cache
+
+# Docs
+*.md
+!README.md
+
+# Editor
+.vscode
+.idea
+*.pem
