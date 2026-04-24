@@ -1,11 +1,11 @@
-# Stage 1: deps
+# Stage 1: install all deps (including dev) for building
 FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci --only=production
+COPY package.json package-lock.json .npmrc ./
+RUN npm ci
 
-# Stage 2: builder
+# Stage 2: build the Next.js app
 FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
@@ -13,7 +13,7 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
-# Stage 3: runner
+# Stage 3: lean production image (standalone output is self-contained)
 FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
