@@ -2,14 +2,39 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
 @layer base {
   :root {
-    --primary: #006A4D;
-    --accent: #38A169;
-    --navy: #1A2B3C;
-    --gold: #D4A017;
-    --cream: #FBF9F4;
-    --error: #C53030;
+    /* Lloyds × SpendStack brand tokens */
+    --color-primary: #006A4D;
+    --color-primary-hi: #007F3E;
+    --gradient-brand: linear-gradient(135deg, #006A4D 0%, #007F3E 100%);
+
+    /* Supporting palette */
+    --color-navy: #1A2B3C;
+    --color-cream: #FBF9F4;
+    --color-gold: #D4A017;
+    --color-n100: #F7F7F7;
+    --color-n200: #E2E8F0;
+    --color-n500: #718096;
+    --color-error: #C53030;
+    --color-success: #38A169;
+
+    /* Radii */
+    --r-sm: 4px;
+    --r-md: 10px;
+    --r-lg: 12px;
+    --r-xl: 16px;
+    --r-full: 9999px;
+
+    /* Shadows */
+    --shadow-card: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+    --shadow-card-hover: 0 4px 12px rgba(0,0,0,.12), 0 2px 4px rgba(0,0,0,.06);
+
+    /* Motion */
+    --ease: cubic-bezier(0.2, 0, 0, 1);
+    --dur: 200ms;
   }
 
   html {
@@ -18,6 +43,45 @@
   }
 
   body {
-    @apply bg-cream text-navy;
+    @apply bg-cream text-navy font-sans;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  /* Focus ring — never remove, only customise */
+  :focus-visible {
+    outline: 2px solid #006A4D;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@layer utilities {
+  /* Tabular numbers for all point / money displays */
+  .tabular { font-variant-numeric: tabular-nums; }
+
+  /* Sheen animation for gold progress bars */
+  @keyframes sheen {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(300%); }
+  }
+  .animate-sheen {
+    animation: sheen 2s ease-in-out infinite;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in { animation: fadeIn 200ms var(--ease) both; }
+
+  /* Reduced motion overrides */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-sheen,
+    .animate-fade-in,
+    * { animation: none !important; transition: none !important; }
   }
 }
