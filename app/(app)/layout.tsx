@@ -9,11 +9,12 @@ import { cn } from '@/lib/utils';
 
 // ── Tab definition — add a new { href, icon, label } here for live demo ──────
 const TABS = [
-  { href: '/dashboard',   icon: '🏠', label: 'Home'    },
-  { href: '/leaderboard', icon: '🏆', label: 'Board'   },
-  { href: '/streak',      icon: '🔥', label: 'Streak'  },
-  { href: '/tier',        icon: '💎', label: 'Tier'    },
-  { href: '/profile',     icon: '👤', label: 'Profile' },
+  { href: '/dashboard',   icon: '🏠', label: 'Home'     },
+  { href: '/leaderboard', icon: '🏆', label: 'Board'    },
+  { href: '/streak',      icon: '🔥', label: 'Streak'   },
+  { href: '/tier',        icon: '💎', label: 'Tier'     },
+  { href: '/household',   icon: '👥', label: 'Household' },
+  { href: '/profile',     icon: '👤', label: 'Profile'  },
 ] as const;
 
 export default function AppLayout({ children }: { children: ReactNode }) {
