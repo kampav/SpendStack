@@ -80,10 +80,13 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build and push Docker image
-        run: |
-          IMAGE="${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/spendstack/app:${{ github.sha }}"
-          docker build --tag "$IMAGE" .
-          docker push "$IMAGE"
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/spendstack/app:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Deploy to Cloud Run
         run: |
