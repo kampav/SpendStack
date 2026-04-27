@@ -10,7 +10,7 @@ const DEMO_HOUSEHOLD_ID = 'demo-household';
 type Category = 'all' | 'cashback' | 'voucher' | 'experience' | 'charity';
 
 const CATEGORIES: { id: Category; label: string }[] = [
-  { id: 'all',        label: 'All'         },
+  { id: 'all',        label: 'All'          },
   { id: 'cashback',   label: '💰 Cashback'  },
   { id: 'voucher',    label: '🎟 Vouchers'   },
   { id: 'experience', label: '🎭 Experiences'},
@@ -18,28 +18,77 @@ const CATEGORIES: { id: Category; label: string }[] = [
 ];
 
 const CATALOGUE = [
-  { id: '1', emoji: '💰', title: '£5 Cashback',        cost: 500,  category: 'cashback'   as Category },
-  { id: '2', emoji: '🛒', title: 'Tesco £10 Voucher',  cost: 1000, category: 'voucher'    as Category },
-  { id: '3', emoji: '🎬', title: 'Cinema x2 Tickets',  cost: 1500, category: 'experience' as Category },
-  { id: '4', emoji: '🌱', title: 'Plant a Tree',        cost: 200,  category: 'charity'   as Category },
-  { id: '5', emoji: '☕', title: 'Pret Coffee Week',    cost: 800,  category: 'voucher'    as Category },
-  { id: '6', emoji: '🏊', title: 'Spa Day for Two',    cost: 3000, category: 'experience' as Category },
+  { id: 'cat-1',  emoji: '💰', title: '£5 Cashback',        cost: 500,  category: 'cashback'   as Category },
+  { id: 'cat-2',  emoji: '💰', title: '£10 Cashback',       cost: 1000, category: 'cashback'   as Category },
+  { id: 'cat-3',  emoji: '🛒', title: 'Tesco £10 Voucher',  cost: 900,  category: 'voucher'    as Category },
+  { id: 'cat-5',  emoji: '☕', title: 'Pret Coffee Week',   cost: 800,  category: 'voucher'    as Category },
+  { id: 'cat-6',  emoji: '🎬', title: 'Cinema x2 Tickets', cost: 1500, category: 'experience' as Category },
+  { id: 'cat-7',  emoji: '🍽️', title: 'Restaurant £25',    cost: 2000, category: 'experience' as Category },
+  { id: 'cat-8',  emoji: '🏊', title: 'Spa Day for Two',   cost: 3000, category: 'experience' as Category },
+  { id: 'cat-9',  emoji: '✈️', title: 'Airport Lounge x2', cost: 2500, category: 'experience' as Category },
+  { id: 'cat-10', emoji: '🌱', title: 'Plant a Tree',       cost: 200,  category: 'charity'   as Category },
+  { id: 'cat-11', emoji: '🌍', title: '£5 to Shelter',     cost: 400,  category: 'charity'   as Category },
+  { id: 'cat-12', emoji: '🦁', title: 'Adopt an Animal',   cost: 750,  category: 'charity'   as Category },
 ];
 
 export default function StorePage() {
   const { user } = useAuth();
   const { members } = useLeaderboard(DEMO_HOUSEHOLD_ID);
-  const [filter, setFilter] = useState<Category>('all');
-  const [redeemed, setRedeemed] = useState<string | null>(null);
+  const [filter, setFilter]         = useState<Category>('all');
+  const [toast, setToast]           = useState<{ msg: string; ok: boolean } | null>(null);
+  const [confirming, setConfirming] = useState<string | null>(null); // item id being confirmed
+  const [redeeming, setRedeeming]   = useState<string | null>(null); // item id in-flight
 
-  const me = members.find((m) => m.uid === user?.uid) ?? members[0];
+  const me         = members.find((m) => m.uid === user?.uid) ?? members[0];
   const userPoints = me?.totalPoints ?? 0;
 
   const filtered = filter === 'all' ? CATALOGUE : CATALOGUE.filter((i) => i.category === filter);
 
-  function handleRedeem(id: string, title: string) {
-    setRedeemed(title);
-    setTimeout(() => setRedeemed(null), 3000);
+  function showToast(msg: string, ok: boolean) {
+    setToast({ msg, ok });
+    setTimeout(() => setToast(null), 3500);
+  }
+
+  async function handleRedeem(id: string, title: string, cost: number) {
+    if (!user) return;
+
+    // First tap → confirm
+    if (confirming !== id) {
+      setConfirming(id);
+      return;
+    }
+
+    // Second tap → execute
+    setConfirming(null);
+    setRedeeming(id);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/store/redeem', {
+        method:  'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization:  `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          itemId:      id,
+          itemTitle:   title,
+          cost,
+          householdId: DEMO_HOUSEHOLD_ID,
+        }),
+      });
+
+      const body = (await res.json()) as { error?: string; newBalance?: number };
+
+      if (!res.ok) {
+        showToast(body.error ?? 'Redemption failed — try again.', false);
+      } else {
+        showToast(`${title} redeemed! 🎉`, true);
+      }
+    } catch {
+      showToast('Network error — try again.', false);
+    } finally {
+      setRedeeming(null);
+    }
   }
 
   return (
@@ -52,10 +101,15 @@ export default function StorePage() {
         </p>
       </div>
 
-      {/* ── Success toast ─────────────────────────────────────────────── */}
-      {redeemed && (
-        <div role="alert" className="rounded-xl bg-accent/10 px-4 py-3 text-[14px] font-semibold text-accent">
-          ✅ {redeemed} redeemed!
+      {/* ── Toast ─────────────────────────────────────────────────────── */}
+      {toast && (
+        <div
+          role="alert"
+          className={`rounded-xl px-4 py-3 text-[14px] font-semibold ${
+            toast.ok ? 'bg-accent/10 text-accent' : 'bg-error/10 text-error'
+          }`}
+        >
+          {toast.ok ? '✅' : '⚠️'} {toast.msg}
         </div>
       )}
 
@@ -64,7 +118,7 @@ export default function StorePage() {
         {CATEGORIES.map(({ id, label }) => (
           <button
             key={id}
-            onClick={() => setFilter(id)}
+            onClick={() => { setFilter(id); setConfirming(null); }}
             className={`shrink-0 px-3 py-1.5 rounded-full text-[13px] font-semibold transition-all duration-150 ${
               filter === id
                 ? 'bg-primary text-white'
@@ -79,7 +133,10 @@ export default function StorePage() {
       {/* ── Grid ──────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-3">
         {filtered.map((item) => {
-          const canAfford = userPoints >= item.cost;
+          const canAfford  = userPoints >= item.cost;
+          const isConfirm  = confirming === item.id;
+          const isLoading  = redeeming === item.id;
+
           return (
             <Card
               key={item.id}
@@ -96,6 +153,7 @@ export default function StorePage() {
                   🪙 {item.cost.toLocaleString('en-GB')} pts
                 </p>
               </div>
+
               {/* Lock overlay */}
               {!canAfford && (
                 <div className="absolute inset-0 flex items-center justify-center bg-white/70">
@@ -107,18 +165,33 @@ export default function StorePage() {
                   </div>
                 </div>
               )}
+
+              {/* Redeem / Confirm button */}
               {canAfford && (
                 <button
-                  onClick={() => handleRedeem(item.id, item.title)}
-                  className="absolute bottom-2 right-2 px-2.5 py-1 bg-primary text-white text-[11px] font-bold rounded-lg hover:brightness-95 transition-all"
+                  onClick={() => handleRedeem(item.id, item.title, item.cost)}
+                  disabled={isLoading}
+                  aria-label={isConfirm ? `Confirm redeem ${item.title}` : `Redeem ${item.title}`}
+                  className={`absolute bottom-2 right-2 px-2.5 py-1 text-white text-[11px] font-bold rounded-lg transition-all disabled:opacity-50 ${
+                    isConfirm
+                      ? 'bg-gold hover:brightness-95'
+                      : 'bg-primary hover:brightness-95'
+                  }`}
                 >
-                  Redeem
+                  {isLoading ? '…' : isConfirm ? 'Confirm?' : 'Redeem'}
                 </button>
               )}
             </Card>
           );
         })}
       </div>
+
+      {/* Dismiss confirm on scroll/filter change hint */}
+      {confirming && (
+        <p className="text-[11px] text-n-500 text-center -mt-2">
+          Tap again to confirm · tap elsewhere to cancel
+        </p>
+      )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useLeaderboard } from '@/lib/hooks/useLeaderboard';
 import { Avatar } from '@/components/ui/Avatar';
@@ -48,6 +49,38 @@ export default function LeaderboardPage() {
         <div className="h-8 w-48 bg-n-200 animate-pulse rounded-lg" />
         <div className="h-48 bg-n-200 animate-pulse rounded-xl" />
         <div className="h-32 bg-n-200 animate-pulse rounded-xl" />
+      </div>
+    );
+  }
+
+  // ── Solo-user: replace board with invite prompt (PRD §1) ────────────────
+  if (members.length <= 1) {
+    const me = members[0];
+    return (
+      <div className="flex flex-col gap-4 px-4 py-5 pb-6 animate-fade-in">
+        <div>
+          <h1 className="text-[26px] font-extrabold text-navy tracking-tight">Leaderboard</h1>
+          <p className="text-[13px] text-n-500 mt-1">How your household ranks</p>
+        </div>
+
+        {/* Solo illustration */}
+        <Card className="flex flex-col items-center text-center py-10 gap-3">
+          <div className="text-[56px]">🏆</div>
+          <h2 className="text-[20px] font-extrabold text-navy">You&apos;re #1 — so far</h2>
+          {me && (
+            <p className="text-[14px] text-n-500">
+              You have <span className="font-bold text-primary">{me.totalPoints.toLocaleString('en-GB')} pts</span>
+            </p>
+          )}
+          <p className="text-[13px] text-n-500 max-w-[240px]">
+            Invite your household to start competing. The more the merrier.
+          </p>
+          <Link href="/household">
+            <Button className="mt-2">
+              👥 Invite household
+            </Button>
+          </Link>
+        </Card>
       </div>
     );
   }
