@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { questConverter } from '@/lib/firebase/converters';
 import type { Quest } from '@/types';
@@ -17,16 +17,21 @@ export function useQuests(uid: string | undefined) {
       return;
     }
 
+    // Single-field where only — no orderBy — avoids composite index requirement.
+    // Firestore auto-provisions single-field indexes; composite ones must be
+    // manually created. We sort client-side instead.
     const q = query(
       collection(db, 'quests').withConverter(questConverter),
       where('userId', '==', uid),
-      orderBy('createdAt', 'desc'),
     );
 
     const unsub = onSnapshot(
       q,
       (snap) => {
-        setQuests(snap.docs.map((d) => d.data()));
+        const sorted = snap.docs
+          .map((d) => d.data())
+          .sort((a, b) => b.createdAt - a.createdAt);
+        setQuests(sorted);
         setLoading(false);
       },
       (err) => {
