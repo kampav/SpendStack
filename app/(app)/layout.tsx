@@ -7,15 +7,22 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { Wordmark } from '@/components/ui/Wordmark';
 import { cn } from '@/lib/utils';
 
-// ── Tab definition — add a new { href, icon, label } here for live demo ──────
+// ── Tab definition ────────────────────────────────────────────────────────────
+// To add a live-demo feature tab: add an entry with enabled: FLAGS.YOUR_FLAG.
+// Tabs without an `enabled` key are always visible.
+// All tabs are always visible. Feature flags control the page content,
+// not tab visibility — disabled features show a "being built" screen.
 const TABS = [
-  { href: '/dashboard',   icon: '🏠', label: 'Home'     },
-  { href: '/leaderboard', icon: '🏆', label: 'Board'    },
-  { href: '/streak',      icon: '🔥', label: 'Streak'   },
-  { href: '/tier',        icon: '💎', label: 'Tier'     },
+  { href: '/dashboard',   icon: '🏠', label: 'Home'      },
+  { href: '/leaderboard', icon: '🏆', label: 'Board'     },
+  { href: '/streak',      icon: '🔥', label: 'Streak'    },
+  { href: '/quests',      icon: '🎯', label: 'Quests'    },
+  { href: '/store',       icon: '🛍️', label: 'Store'     },
+  { href: '/coach',       icon: '🤖', label: 'Coach'     },
+  { href: '/tier',        icon: '💎', label: 'Tier'      },
   { href: '/household',   icon: '👥', label: 'Household' },
-  { href: '/profile',     icon: '👤', label: 'Profile'  },
-] as const;
+  { href: '/profile',     icon: '👤', label: 'Profile'   },
+];
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
