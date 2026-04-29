@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, FormEvent } from 'react';
 import { useAuth } from '@/lib/hooks/useAuth';
 import type { CoachMessage as CoachMessageType } from '@/types';
+import { FLAGS } from '@/lib/config/featureFlags';
 
 const SUGGESTIONS = [
   'How am I doing this month?',
@@ -27,6 +28,27 @@ export default function CoachPage() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // ── Feature flag guard ──────────────────────────────────────────────────
+  // Hooks are above — this early return is after all hook calls.
+  // Set FLAGS.AI_COACH = false in lib/config/featureFlags.ts to hide.
+  if (!FLAGS.AI_COACH) {
+    return (
+      <div className="flex flex-col gap-4 px-4 py-5 pb-6 animate-fade-in">
+        <div>
+          <h1 className="text-[26px] font-extrabold text-navy tracking-tight">AI Coach</h1>
+          <p className="text-[13px] text-n-500 mt-1">Your personal spending coach</p>
+        </div>
+        <div className="rounded-2xl border border-n-200 bg-white p-8 text-center">
+          <p className="text-[40px]" aria-hidden="true">🔒</p>
+          <p className="text-[17px] font-extrabold text-navy mt-3">Coming Soon</p>
+          <p className="text-[13px] text-n-500 mt-2 max-w-[240px] mx-auto">
+            Your AI spending coach is on its way.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   async function sendMessage(text: string) {
     if (!text.trim() || streaming || !user) return;

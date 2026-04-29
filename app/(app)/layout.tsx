@@ -17,6 +17,7 @@ const ALL_TABS = [
   { href: '/streak',      icon: '🔥', label: 'Streak'    },
   { href: '/quests',      icon: '🎯', label: 'Quests',   enabled: FLAGS.AI_QUESTS     },
   { href: '/store',       icon: '🛍️', label: 'Store',    enabled: FLAGS.REWARDS_STORE },
+  { href: '/coach',       icon: '🤖', label: 'Coach',    enabled: FLAGS.AI_COACH      },
   { href: '/tier',        icon: '💎', label: 'Tier'      },
   { href: '/household',   icon: '👥', label: 'Household' },
   { href: '/profile',     icon: '👤', label: 'Profile'   },
