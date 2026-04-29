@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import type { Quest, TransactionCategory } from '@/types';
+import { FLAGS } from '@/lib/config/featureFlags';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -149,13 +150,36 @@ function EmptyState({
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function QuestsPage() {
-  const { user }                  = useAuth();
+  // Hooks must be called unconditionally — flag guard is after them
+  const { user }                       = useAuth();
   const { active, completed, loading } = useQuests(user?.uid);
   const [generating, setGenerating]    = useState(false);
   const [genError,   setGenError]      = useState('');
   const [pastOpen,   setPastOpen]      = useState(false);
 
   const week = isoWeek();
+
+  // ── Feature flag guard ────────────────────────────────────────────────────
+  // Flip FLAGS.AI_QUESTS → true in lib/config/featureFlags.ts to unlock.
+  if (!FLAGS.AI_QUESTS) {
+    return (
+      <div className="flex flex-col gap-4 px-4 py-5 pb-6 animate-fade-in">
+        <div>
+          <h1 className="text-[26px] font-extrabold text-navy tracking-tight">
+            Quests
+          </h1>
+          <p className="text-[13px] text-n-500 mt-1">AI-powered weekly challenges</p>
+        </div>
+        <div className="rounded-2xl border border-n-200 bg-white p-8 text-center">
+          <p className="text-[40px]" aria-hidden="true">🔒</p>
+          <p className="text-[17px] font-extrabold text-navy mt-3">Coming Soon</p>
+          <p className="text-[13px] text-n-500 mt-2 max-w-[240px] mx-auto">
+            AI-powered spending quests are on their way. Check back soon.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   async function handleGenerate() {
     if (!user) return;

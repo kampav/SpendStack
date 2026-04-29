@@ -6,16 +6,21 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { Wordmark } from '@/components/ui/Wordmark';
 import { cn } from '@/lib/utils';
+import { FLAGS } from '@/lib/config/featureFlags';
 
-// ── Tab definition — add a new { href, icon, label } here for live demo ──────
-const TABS = [
-  { href: '/dashboard',   icon: '🏠', label: 'Home'     },
-  { href: '/leaderboard', icon: '🏆', label: 'Board'    },
-  { href: '/streak',      icon: '🔥', label: 'Streak'   },
-  { href: '/tier',        icon: '💎', label: 'Tier'     },
+// ── Tab definition — add a new { href, icon, label, enabled? } here for live demo ──
+// Omit `enabled` to always show. Set enabled: FLAGS.SOME_FLAG to gate behind a flag.
+const ALL_TABS = [
+  { href: '/dashboard',   icon: '🏠', label: 'Home'      },
+  { href: '/leaderboard', icon: '🏆', label: 'Board'     },
+  { href: '/streak',      icon: '🔥', label: 'Streak'    },
+  { href: '/quests',      icon: '🎯', label: 'Quests',   enabled: FLAGS.AI_QUESTS },
+  { href: '/tier',        icon: '💎', label: 'Tier'      },
   { href: '/household',   icon: '👥', label: 'Household' },
-  { href: '/profile',     icon: '👤', label: 'Profile'  },
-] as const;
+  { href: '/profile',     icon: '👤', label: 'Profile'   },
+];
+
+const TABS = ALL_TABS.filter((t) => t.enabled !== false);
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
