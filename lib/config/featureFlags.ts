@@ -8,10 +8,10 @@
  */
 export const FLAGS: Record<string, boolean> = {
   /** AI-powered weekly spending challenges. Set true to reveal during demo. */
-  AI_QUESTS: false,
+  AI_QUESTS: true,
 
   /** Points redemption store. Set true to reveal during demo. */
-  REWARDS_STORE: false,
+  REWARDS_STORE: true,
 
   /** AI Spending Coach — enabled by default. Set false to hide. */
   AI_COACH: true,
