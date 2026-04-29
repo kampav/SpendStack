@@ -6,25 +6,23 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { Wordmark } from '@/components/ui/Wordmark';
 import { cn } from '@/lib/utils';
-import { FLAGS } from '@/lib/config/featureFlags';
 
 // ── Tab definition ────────────────────────────────────────────────────────────
 // To add a live-demo feature tab: add an entry with enabled: FLAGS.YOUR_FLAG.
 // Tabs without an `enabled` key are always visible.
-const ALL_TABS = [
+// All tabs are always visible. Feature flags control the page content,
+// not tab visibility — disabled features show a "being built" screen.
+const TABS = [
   { href: '/dashboard',   icon: '🏠', label: 'Home'      },
   { href: '/leaderboard', icon: '🏆', label: 'Board'     },
   { href: '/streak',      icon: '🔥', label: 'Streak'    },
-  { href: '/quests',      icon: '🎯', label: 'Quests',   enabled: FLAGS.AI_QUESTS     },
-  { href: '/store',       icon: '🛍️', label: 'Store',    enabled: FLAGS.REWARDS_STORE },
-  { href: '/coach',       icon: '🤖', label: 'Coach',    enabled: FLAGS.AI_COACH      },
+  { href: '/quests',      icon: '🎯', label: 'Quests'    },
+  { href: '/store',       icon: '🛍️', label: 'Store'     },
+  { href: '/coach',       icon: '🤖', label: 'Coach'     },
   { href: '/tier',        icon: '💎', label: 'Tier'      },
   { href: '/household',   icon: '👥', label: 'Household' },
   { href: '/profile',     icon: '👤', label: 'Profile'   },
 ];
-
-// Filter out tabs whose feature flag is explicitly false
-const TABS = ALL_TABS.filter((t) => t.enabled !== false);
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();

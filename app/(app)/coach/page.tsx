@@ -40,10 +40,10 @@ export default function CoachPage() {
           <p className="text-[13px] text-n-500 mt-1">Your personal spending coach</p>
         </div>
         <div className="rounded-2xl border border-n-200 bg-white p-8 text-center">
-          <p className="text-[40px]" aria-hidden="true">🔒</p>
-          <p className="text-[17px] font-extrabold text-navy mt-3">Coming Soon</p>
+          <p className="text-[40px]" aria-hidden="true">🚧</p>
+          <p className="text-[17px] font-extrabold text-navy mt-3">Being built live</p>
           <p className="text-[13px] text-n-500 mt-2 max-w-[240px] mx-auto">
-            Your AI spending coach is on its way.
+            This feature is being built right now. Check back in a moment.
           </p>
         </div>
       </div>
