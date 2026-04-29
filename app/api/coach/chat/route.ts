@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { adminAuth, adminDb } from '@/lib/firebase/admin';
 import { anthropic } from '@/lib/anthropic/client';
+import { DEMO_COACH_CONTEXT } from '@/lib/coach/demoContext';
 import type { CoachMessage } from '@/types';
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
@@ -175,14 +176,19 @@ export async function POST(req: NextRequest): Promise<Response> {
   const body = (await req.json()) as { messages: CoachMessage[] };
   const { messages } = body;
 
-  // Fetch user context — errors here are non-fatal; fall back to generic prompt
+  // 1. Demo users → use hardcoded synthetic context (always works, no index deps)
+  // 2. Real users → fetch from Firestore (best-effort, falls back to generic)
   let systemPrompt: string;
-  try {
-    const userContext = await buildUserContext(uid);
-    systemPrompt = buildSystemPrompt(userContext);
-  } catch (err) {
-    console.error('[coach/chat] context fetch failed:', err);
-    systemPrompt = buildSystemPrompt('(User data unavailable — give general SpendStack guidance)');
+  if (DEMO_COACH_CONTEXT[uid]) {
+    systemPrompt = buildSystemPrompt(DEMO_COACH_CONTEXT[uid]);
+  } else {
+    try {
+      const userContext = await buildUserContext(uid);
+      systemPrompt = buildSystemPrompt(userContext);
+    } catch (err) {
+      console.error('[coach/chat] context fetch failed:', err);
+      systemPrompt = buildSystemPrompt('(User data unavailable — give general SpendStack guidance)');
+    }
   }
 
   const stream = anthropic.messages.stream({
