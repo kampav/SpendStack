@@ -4,52 +4,76 @@ import { useState } from 'react';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useLeaderboard } from '@/lib/hooks/useLeaderboard';
 import { Card } from '@/components/ui/Card';
+import { FLAGS } from '@/lib/config/featureFlags';
 
 const DEMO_HOUSEHOLD_ID = 'demo-household';
 
 type Category = 'all' | 'cashback' | 'voucher' | 'experience' | 'charity';
 
 const CATEGORIES: { id: Category; label: string }[] = [
-  { id: 'all',        label: 'All'          },
-  { id: 'cashback',   label: '💰 Cashback'  },
-  { id: 'voucher',    label: '🎟 Vouchers'   },
-  { id: 'experience', label: '🎭 Experiences'},
-  { id: 'charity',    label: '🌱 Charity'   },
+  { id: 'all',        label: 'All'           },
+  { id: 'cashback',   label: '💰 Cashback'   },
+  { id: 'voucher',    label: '🎟 Vouchers'    },
+  { id: 'experience', label: '🎭 Experiences' },
+  { id: 'charity',    label: '🌱 Charity'    },
 ];
 
 const CATALOGUE = [
-  { id: 'cat-1',  emoji: '💰', title: '£5 Cashback',        cost: 500,  category: 'cashback'   as Category },
-  { id: 'cat-2',  emoji: '💰', title: '£10 Cashback',       cost: 1000, category: 'cashback'   as Category },
-  { id: 'cat-3',  emoji: '🛒', title: 'Tesco £10 Voucher',  cost: 900,  category: 'voucher'    as Category },
-  { id: 'cat-5',  emoji: '☕', title: 'Pret Coffee Week',   cost: 800,  category: 'voucher'    as Category },
-  { id: 'cat-6',  emoji: '🎬', title: 'Cinema x2 Tickets', cost: 1500, category: 'experience' as Category },
-  { id: 'cat-7',  emoji: '🍽️', title: 'Restaurant £25',    cost: 2000, category: 'experience' as Category },
-  { id: 'cat-8',  emoji: '🏊', title: 'Spa Day for Two',   cost: 3000, category: 'experience' as Category },
-  { id: 'cat-9',  emoji: '✈️', title: 'Airport Lounge x2', cost: 2500, category: 'experience' as Category },
-  { id: 'cat-10', emoji: '🌱', title: 'Plant a Tree',       cost: 200,  category: 'charity'   as Category },
-  { id: 'cat-11', emoji: '🌍', title: '£5 to Shelter',     cost: 400,  category: 'charity'   as Category },
-  { id: 'cat-12', emoji: '🦁', title: 'Adopt an Animal',   cost: 750,  category: 'charity'   as Category },
+  { id: 'cat-1',  emoji: '💰', title: '£5 Cashback',        pointsCost: 500,  category: 'cashback'   as Category },
+  { id: 'cat-2',  emoji: '💰', title: '£10 Cashback',       pointsCost: 1000, category: 'cashback'   as Category },
+  { id: 'cat-3',  emoji: '🛒', title: 'Tesco £10 Voucher',  pointsCost: 900,  category: 'voucher'    as Category },
+  { id: 'cat-5',  emoji: '☕', title: 'Pret Coffee Week',   pointsCost: 800,  category: 'voucher'    as Category },
+  { id: 'cat-6',  emoji: '🎬', title: 'Cinema x2 Tickets', pointsCost: 1500, category: 'experience' as Category },
+  { id: 'cat-7',  emoji: '🍽️', title: 'Restaurant £25',    pointsCost: 2000, category: 'experience' as Category },
+  { id: 'cat-8',  emoji: '🏊', title: 'Spa Day for Two',   pointsCost: 3000, category: 'experience' as Category },
+  { id: 'cat-9',  emoji: '✈️', title: 'Airport Lounge x2', pointsCost: 2500, category: 'experience' as Category },
+  { id: 'cat-10', emoji: '🌱', title: 'Plant a Tree',       pointsCost: 200,  category: 'charity'   as Category },
+  { id: 'cat-11', emoji: '🌍', title: '£5 to Shelter',     pointsCost: 400,  category: 'charity'   as Category },
+  { id: 'cat-12', emoji: '🦁', title: 'Adopt an Animal',   pointsCost: 750,  category: 'charity'   as Category },
 ];
 
 export default function StorePage() {
+  // Hooks must be called unconditionally — flag guard is after them
   const { user } = useAuth();
   const { members } = useLeaderboard(DEMO_HOUSEHOLD_ID);
   const [filter, setFilter]         = useState<Category>('all');
   const [toast, setToast]           = useState<{ msg: string; ok: boolean } | null>(null);
-  const [confirming, setConfirming] = useState<string | null>(null); // item id being confirmed
-  const [redeeming, setRedeeming]   = useState<string | null>(null); // item id in-flight
+  const [confirming, setConfirming] = useState<string | null>(null);
+  const [redeeming, setRedeeming]   = useState<string | null>(null);
 
   const me         = members.find((m) => m.uid === user?.uid) ?? members[0];
   const userPoints = me?.totalPoints ?? 0;
 
   const filtered = filter === 'all' ? CATALOGUE : CATALOGUE.filter((i) => i.category === filter);
 
+  // ── Feature flag guard ────────────────────────────────────────────────────
+  // Flip FLAGS.REWARDS_STORE → true in lib/config/featureFlags.ts to unlock.
+  if (!FLAGS.REWARDS_STORE) {
+    return (
+      <div className="flex flex-col gap-4 px-4 py-5 pb-6 animate-fade-in">
+        <div>
+          <h1 className="text-[26px] font-extrabold text-navy tracking-tight">
+            Rewards Store
+          </h1>
+          <p className="text-[13px] text-n-500 mt-1">Redeem points for real rewards</p>
+        </div>
+        <div className="rounded-2xl border border-n-200 bg-white p-8 text-center">
+          <p className="text-[40px]" aria-hidden="true">🔒</p>
+          <p className="text-[17px] font-extrabold text-navy mt-3">Coming Soon</p>
+          <p className="text-[13px] text-n-500 mt-2 max-w-[240px] mx-auto">
+            The Rewards Store is on its way. Redeem your points for cashback, vouchers, and more.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   function showToast(msg: string, ok: boolean) {
     setToast({ msg, ok });
     setTimeout(() => setToast(null), 3500);
   }
 
-  async function handleRedeem(id: string, title: string, cost: number) {
+  async function handleRedeem(id: string, title: string, pointsCost: number) {
     if (!user) return;
 
     // First tap → confirm
@@ -72,15 +96,15 @@ export default function StorePage() {
         body: JSON.stringify({
           itemId:      id,
           itemTitle:   title,
-          cost,
+          pointsCost,
           householdId: DEMO_HOUSEHOLD_ID,
         }),
       });
 
-      const body = (await res.json()) as { error?: string; newBalance?: number };
+      const data = (await res.json()) as { error?: string; newBalance?: number };
 
       if (!res.ok) {
-        showToast(body.error ?? 'Redemption failed — try again.', false);
+        showToast(data.error ?? 'Redemption failed — try again.', false);
       } else {
         showToast(`${title} redeemed! 🎉`, true);
       }
@@ -133,9 +157,9 @@ export default function StorePage() {
       {/* ── Grid ──────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-3">
         {filtered.map((item) => {
-          const canAfford  = userPoints >= item.cost;
-          const isConfirm  = confirming === item.id;
-          const isLoading  = redeeming === item.id;
+          const canAfford = userPoints >= item.pointsCost;
+          const isConfirm = confirming === item.id;
+          const isLoading = redeeming === item.id;
 
           return (
             <Card
@@ -143,24 +167,24 @@ export default function StorePage() {
               padding="none"
               className={`overflow-hidden relative ${!canAfford ? 'opacity-70' : ''}`}
             >
-              {/* Image / icon area */}
+              {/* Icon area */}
               <div className="h-24 bg-n-100 flex items-center justify-center text-[44px]">
                 {item.emoji}
               </div>
               <div className="p-3">
                 <p className="text-[13px] font-bold text-navy leading-snug">{item.title}</p>
                 <p className="text-[12px] font-semibold text-gold mt-1 tabular">
-                  🪙 {item.cost.toLocaleString('en-GB')} pts
+                  🪙 {item.pointsCost.toLocaleString('en-GB')} pts
                 </p>
               </div>
 
-              {/* Lock overlay */}
+              {/* Lock overlay — insufficient balance */}
               {!canAfford && (
                 <div className="absolute inset-0 flex items-center justify-center bg-white/70">
                   <div className="flex flex-col items-center text-center px-2">
-                    <span className="text-[20px]">🔒</span>
+                    <span className="text-[20px]" aria-hidden="true">🔒</span>
                     <span className="text-[11px] font-semibold text-n-500 mt-1">
-                      Need {(item.cost - userPoints).toLocaleString('en-GB')} more
+                      Need {(item.pointsCost - userPoints).toLocaleString('en-GB')} more
                     </span>
                   </div>
                 </div>
@@ -169,7 +193,7 @@ export default function StorePage() {
               {/* Redeem / Confirm button */}
               {canAfford && (
                 <button
-                  onClick={() => handleRedeem(item.id, item.title, item.cost)}
+                  onClick={() => handleRedeem(item.id, item.title, item.pointsCost)}
                   disabled={isLoading}
                   aria-label={isConfirm ? `Confirm redeem ${item.title}` : `Redeem ${item.title}`}
                   className={`absolute bottom-2 right-2 px-2.5 py-1 text-white text-[11px] font-bold rounded-lg transition-all disabled:opacity-50 ${
@@ -186,7 +210,7 @@ export default function StorePage() {
         })}
       </div>
 
-      {/* Dismiss confirm on scroll/filter change hint */}
+      {/* Confirm hint */}
       {confirming && (
         <p className="text-[11px] text-n-500 text-center -mt-2">
           Tap again to confirm · tap elsewhere to cancel

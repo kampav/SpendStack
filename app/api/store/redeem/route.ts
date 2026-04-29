@@ -6,7 +6,7 @@ import type { ApiError } from '@/types';
 interface RedeemRequest {
   itemId:      string;
   itemTitle:   string;
-  cost:        number;
+  pointsCost:  number;
   householdId: string;
 }
 
@@ -35,9 +35,9 @@ export async function POST(
   try {
     const raw = (await req.json()) as Partial<RedeemRequest>;
     if (
-      typeof raw.itemId      !== 'string' || !raw.itemId ||
-      typeof raw.itemTitle   !== 'string' || !raw.itemTitle ||
-      typeof raw.cost        !== 'number' || raw.cost <= 0 ||
+      typeof raw.itemId      !== 'string' || !raw.itemId      ||
+      typeof raw.itemTitle   !== 'string' || !raw.itemTitle   ||
+      typeof raw.pointsCost  !== 'number' || raw.pointsCost <= 0 ||
       typeof raw.householdId !== 'string' || !raw.householdId
     ) throw new Error('invalid');
     body = raw as RedeemRequest;
@@ -45,7 +45,7 @@ export async function POST(
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
 
-  const { itemId, itemTitle, cost, householdId } = body;
+  const { itemId, itemTitle, pointsCost, householdId } = body;
 
   try {
     const memberRef = adminDb
@@ -60,46 +60,47 @@ export async function POST(
     }
 
     const currentPoints = (memberSnap.data()?.totalPoints as number) ?? 0;
-    if (currentPoints < cost) {
+    if (currentPoints < pointsCost) {
       return NextResponse.json(
-        { error: `Insufficient points — you have ${currentPoints.toLocaleString('en-GB')}, need ${cost.toLocaleString('en-GB')}` },
+        {
+          error: `Insufficient points — you have ${currentPoints.toLocaleString('en-GB')}, need ${pointsCost.toLocaleString('en-GB')}`,
+        },
         { status: 400 },
       );
     }
 
-    const newBalance = currentPoints - cost;
+    const newBalance = currentPoints - pointsCost;
     const now        = Date.now();
     const batch      = adminDb.batch();
 
     // Deduct from household member doc (real-time leaderboard picks this up)
     batch.update(memberRef, {
-      totalPoints: FieldValue.increment(-cost),
+      totalPoints: FieldValue.increment(-pointsCost),
     });
 
-    // Write negative ledger entry
+    // Negative PointsLedger entry — server-side only per security rules
     const ledgerRef = adminDb.collection('pointsLedger').doc();
     batch.set(ledgerRef, {
-      id:            ledgerRef.id,
-      userId:        uid,
+      id:           ledgerRef.id,
+      userId:       uid,
       householdId,
-      transactionId: null,
-      delta:         -cost,
-      balance:       newBalance,
-      balanceAfter:  newBalance,
-      reason:        'redemption',
-      relatedId:     null,
-      createdAt:     now,
+      delta:        -pointsCost,
+      balance:      newBalance,
+      reason:       'redemption',
+      relatedId:    itemId,
+      balanceAfter: newBalance,
+      createdAt:    now,
     });
 
-    // Write redemption record
+    // Redemption record
     const redemptionRef = adminDb.collection('redemptions').doc();
     batch.set(redemptionRef, {
       id:         redemptionRef.id,
       userId:     uid,
       itemId,
       itemTitle,
-      pointsCost: cost,
-      status:     'pending',
+      pointsCost,
+      status:     'fulfilled',
       createdAt:  now,
     });
 
