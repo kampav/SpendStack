@@ -7,21 +7,14 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { Wordmark } from '@/components/ui/Wordmark';
 import { cn } from '@/lib/utils';
 
-// ── Tab definition ────────────────────────────────────────────────────────────
-// To add a live-demo feature tab: add an entry with enabled: FLAGS.YOUR_FLAG.
-// Tabs without an `enabled` key are always visible.
-// All tabs are always visible. Feature flags control the page content,
-// not tab visibility — disabled features show a "being built" screen.
+// ── Primary navigation — 4 tabs ───────────────────────────────────────────────
+// Quests, Store, Streak, Tier, Household remain accessible via deep links /
+// the Home page. Feature flags control page content, not nav visibility.
 const TABS = [
-  { href: '/dashboard',   icon: '🏠', label: 'Home'      },
-  { href: '/leaderboard', icon: '🏆', label: 'Board'     },
-  { href: '/streak',      icon: '🔥', label: 'Streak'    },
-  { href: '/quests',      icon: '🎯', label: 'Quests'    },
-  { href: '/store',       icon: '🛍️', label: 'Store'     },
-  { href: '/coach',       icon: '🤖', label: 'Coach'     },
-  { href: '/tier',        icon: '💎', label: 'Tier'      },
-  { href: '/household',   icon: '👥', label: 'Household' },
-  { href: '/profile',     icon: '👤', label: 'Profile'   },
+  { href: '/dashboard',   icon: '🏠', label: 'Home'    },
+  { href: '/leaderboard', icon: '🏆', label: 'Board'   },
+  { href: '/coach',       icon: '🤖', label: 'Coach'   },
+  { href: '/profile',     icon: '👤', label: 'Profile' },
 ];
 
 export default function AppLayout({ children }: { children: ReactNode }) {
