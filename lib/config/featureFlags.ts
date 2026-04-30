@@ -11,7 +11,7 @@ export const FLAGS: Record<string, boolean> = {
   AI_QUESTS: false,
 
   /** Points redemption store. Set true to reveal during demo. */
-  REWARDS_STORE: false,
+  REWARDS_STORE: true,
 
   /** AI Spending Coach — enabled by default. Set false to hide. */
   AI_COACH: false,
